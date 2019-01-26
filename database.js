@@ -31,7 +31,7 @@ const getDataOnPages = async function (pagesCount) {
 async function getData () {
   const pagesCount = await getPagesCount();
   const data = await getDataOnPages(pagesCount);
-  console.log(`Data was succesfully loaded.`);
+  console.log(`Data was succesfully loaded from API`);
   return data;
 }
 
