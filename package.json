@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "predb" : "createFolder.bat",
+    "predb": "createFolder.bat",
     "db": "mongod --dbpath .\\database\\"
   },
   "repository": {
@@ -19,7 +19,9 @@
   },
   "homepage": "https://github.com/Duchannes/module6#readme",
   "dependencies": {
+    "googleapis": "^27.0.0",
     "mongodb": "^3.1.12",
+    "readline-sync": "^1.4.9",
     "request": "^2.88.0",
     "request-promise": "^4.2.2"
   },

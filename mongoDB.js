@@ -37,8 +37,7 @@ function getAdditionalData (length) {
 async function getFiltredData () {
   const client = await getClient();
   const db = await getDB(client);
-
-  const searchResult = db.collection(`chars`).aggregate([
+  let searchResult = db.collection(`chars`).aggregate([
     {
       $lookup:
           {
@@ -56,6 +55,10 @@ async function getFiltredData () {
   ).toArray();
   client.close();
   console.log(`Successfully disconnected from MongoDB server`);
+  searchResult = (await searchResult).map(element => {
+    return Object.values(element);
+  });
+  searchResult.unshift([`Age`, `ID`, `Name`, `Status`, `Species`, `Type`, `Gender`]);
   return searchResult;
 }
 

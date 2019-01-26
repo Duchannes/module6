@@ -1,4 +1,6 @@
 const mongoDB = require(`./mongoDB.js`);
+const sheet = require(`./googleAPI.js`);
+const auth = require(`./googleAuth.js`);
 
 const step = process.argv[2];
 
@@ -11,7 +13,9 @@ async function chooseStep () {
         mongoDB.loadDataToDB();
         break;
       case `export`:
-        console.log((await mongoDB.getFiltredData()).length);
+        let data = (await mongoDB.getFiltredData());
+        const client = auth.authorize();
+        sheet.writeToSheet(client, data);
         break;
       default: console.log(`Wrong command!
   Use: node ./index <command>
