@@ -1,6 +1,8 @@
 const mongoDB = require(`./mongoDB.js`);
 const sheet = require(`./googleAPI.js`);
-const auth = require(`./googleAuth.js`);
+const clientAuth = require(`./googleAuth.js`);
+const fs = require(`fs`);
+const path = require(`path`);
 
 const step = process.argv[2];
 
@@ -13,15 +15,24 @@ async function chooseStep () {
         mongoDB.loadDataToDB();
         break;
       case `export`:
-        let data = (await mongoDB.getFiltredData());
-        const client = auth.authorize();
+        const data = await mongoDB.getFiltredData();
+        const client = await clientAuth.authorize();
         sheet.writeToSheet(client, data);
+        break;
+      case `save`:
+        const chars = await mongoDB.getChars();
+        const age = await mongoDB.getAge();
+        fs.writeFileSync(`chars.json`, JSON.stringify(chars));
+        console.log(`Chars data file created:\n\t${path.resolve(`./chars.json`)}`);
+        fs.writeFileSync(`age.json`, JSON.stringify(age));
+        console.log(`Age data file created:\n\t${path.resolve(`./age.json`)}`);
         break;
       default: console.log(`Wrong command!
   Use: node ./index <command>
   List of available commands:
   load - load data to database from rickandmortyapi.com api
-  export - load data from database to Google `);
+  export - load data from database to Google
+  save - save all data from db to JSON files`);
         break;
     }
   }

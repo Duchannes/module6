@@ -62,6 +62,24 @@ async function getFiltredData () {
   return searchResult;
 }
 
+async function getChars () {
+  const client = await getClient();
+  const db = await getDB(client);
+  const searchResult = await db.collection(`chars`).find({}).toArray();
+  client.close();
+  console.log(`Successfully disconnected from MongoDB server`);
+  return searchResult;
+}
+
+async function getAge () {
+  const client = await getClient();
+  const db = await getDB(client);
+  const searchResult = await db.collection(`age`).find({}).toArray();
+  client.close();
+  console.log(`Successfully disconnected from MongoDB server`);
+  return searchResult;
+}
+
 async function getClient () {
   const url = `mongodb://localhost:27017`;
   const client = MongoClient.connect(url, { useNewUrlParser: true });
@@ -77,5 +95,7 @@ async function getDB (client) {
 
 module.exports = {
   loadDataToDB,
-  getFiltredData
+  getFiltredData,
+  getChars,
+  getAge
 };
