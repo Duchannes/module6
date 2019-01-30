@@ -1,6 +1,5 @@
 const mongoDB = require(`./mongoDB.js`);
 const sheet = require(`./googleAPI.js`);
-const clientAuth = require(`./googleAuth.js`);
 const fs = require(`fs`);
 const path = require(`path`);
 
@@ -16,8 +15,7 @@ async function chooseStep () {
         break;
       case `export`:
         const data = await mongoDB.getFiltredData();
-        const client = await clientAuth.authorize();
-        sheet.writeToSheet(client, data);
+        sheet.writeToSheet(data);
         break;
       case `save`:
         const chars = await mongoDB.getChars();

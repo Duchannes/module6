@@ -1,18 +1,32 @@
+/* eslint-disable no-unused-expressions */
 /* eslint-disable no-undef */
 const path = require(`path`);
-const chai = require(`chai`);
+const chai = require(`chai`).use(require(`chai-as-promised`));
 const expect = chai.expect;
 
 const googleAPI = require(path.resolve(`./googleAPI.js`));
-const googleAuth = require(path.resolve(`./googleAuth.js`));
 const mongoDB = require(path.resolve(`./mongoDB.js`));
+const sheet = require(path.resolve(`./googleAPI.js`));
 
-describe(`#check data from google sheets API`, async function () {
-  it(`data shoud be the same as from database`, async function () {
+const statusSuccessfulResponseCode = 200;
+
+describe(`#test of google sheets API service`, async function () {
+  it(`status code corresponds to ${statusSuccessfulResponseCode}`, async function () {
+    this.timeout(5000);
     const data = await mongoDB.getFiltredData();
-    const client = await googleAuth.authorize();
-    await googleAPI.readSheet(client, data);
-    const dbData = require(path.resolve(`./test/data.json`));
-    expect(data.toString()).to.be.equal(dbData.toString());
+    await sheet.writeToSheet(data);
+    const statusCode = await googleAPI.getResponseOfSheetReading(`code`);
+    expect(statusCode).to.be.equal(statusSuccessfulResponseCode);
+  });
+  it(`sheets data must be the same as the database data`, async function () {
+    this.timeout(5000);
+    const data = await mongoDB.getFiltredData();
+    await sheet.writeToSheet(data);
+    const sheetData = await googleAPI.getResponseOfSheetReading(`data`);
+    expect(data.toString()).to.be.equal(sheetData.toString());
+  });
+  it(`request without API key must be rejected`, async function () {
+    this.timeout(5000);
+    expect(googleAPI.getResponseOfUnauthorizedSheetReading()).to.be.rejected;
   });
 });

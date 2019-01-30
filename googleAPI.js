@@ -1,46 +1,69 @@
 const { google } = require(`googleapis`);
-const sheets = google.sheets(`v4`);
-const fs = require(`fs`);
-const path = require(`path`);
+const clientAuth = require(`./googleAuth.js`);
 
-function writeToSheet (auth, data) {
+async function writeToSheet (data) {
+  await clearSheet();
+  const sheets = await getSheet();
   const request = {
     spreadsheetId: `1t4qou1upZi387mU9yWl_Uvg_7nPVf-QuQVMhDK1toaI`,
     range: `A1`,
     valueInputOption: `RAW`,
     resource: {
       values: data
-    },
-    auth: auth
-  };
-  sheets.spreadsheets.values.update(request, function (err, response) {
-    if (err) {
-      console.error(err);
-      return;
     }
-    console.log(`Data succesfully loaded to google sheets.\nYou can open it on: https://docs.google.com/spreadsheets/d/1t4qou1upZi387mU9yWl_Uvg_7nPVf-QuQVMhDK1toaI/edit#gid=0`);
-  });
+  };
+  sheets.spreadsheets.values.update(request);
+  console.log(`Data succesfully loaded to google sheet.
+You can open it on: https://docs.google.com/spreadsheets/d/${request.spreadsheetId}/edit#gid=0`);
 };
 
-function readSheet (auth, data) {
+async function getResponseOfSheetReading (partOfResponse) {
+  const sheets = await getSheet();
   const request = {
     spreadsheetId: `1t4qou1upZi387mU9yWl_Uvg_7nPVf-QuQVMhDK1toaI`,
-    range: `A1:G${1 + data.length}`,
-    valueRenderOption: `UNFORMATTED_VALUE`,
-    dateTimeRenderOption: `FORMATTED_STRING`,
-    auth: auth
-  };
-  sheets.spreadsheets.values.get(request, function (err, response) {
-    if (err) {
-      console.error(err);
-      return;
-    }
-    const data = response.data.values;
-    fs.writeFileSync(path.resolve(`./test/data.json`), JSON.stringify(data));
-  });
+    range: `Data`,
+    valueRenderOption: `UNFORMATTED_VALUE` };
+  const response = await sheets.spreadsheets.values.get(request);
+  switch (partOfResponse) {
+    case `data` :
+      const data = await response.data.values;
+      return data;
+    case `code` :
+      const status = await response.status;
+      return status;
+    default:
+      console.log(`Missing argument "partOfResponse". Nothing to return`);
+  }
 };
+
+async function getResponseOfUnauthorizedSheetReading () {
+  const sheets = google.sheets({ version: `v4` });
+  const request = {
+    spreadsheetId: `1t4qou1upZi387mU9yWl_Uvg_7nPVf-QuQVMhDK1toaI`,
+    range: `Data`,
+    valueRenderOption: `UNFORMATTED_VALUE` };
+  const response = await sheets.spreadsheets.values.get(request);
+  return response.status;
+};
+
+async function clearSheet () {
+  const sheets = await getSheet();
+  const request = {
+    spreadsheetId: `1t4qou1upZi387mU9yWl_Uvg_7nPVf-QuQVMhDK1toaI`,
+    range: `Data`
+  };
+  sheets.spreadsheets.values.clear(request);
+  console.log(`Data was succesfully deleted from sheet.`);
+};
+
+async function getSheet () {
+  const auth = await clientAuth.authorize();
+  const sheets = google.sheets({ version: `v4`, auth });
+  return sheets;
+}
 
 module.exports = {
   writeToSheet,
-  readSheet
+  getResponseOfSheetReading,
+  getResponseOfUnauthorizedSheetReading
 };
