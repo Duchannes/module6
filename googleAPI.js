@@ -36,8 +36,28 @@ async function getResponseOfSheetReading (partOfResponse) {
   }
 };
 
-async function getResponseOfUnauthorizedSheetReading () {
-  const sheets = google.sheets({ version: `v4` });
+async function getResponseOfSheetReadingWithWrongRange () {
+  const sheets = await getSheet();
+  const request = {
+    spreadsheetId: `1t4qou1upZi387mU9yWl_Uvg_7nPVf-QuQVMhDK1toaI`,
+    range: `List`,
+    valueRenderOption: `UNFORMATTED_VALUE` };
+  const response = await sheets.spreadsheets.values.get(request);
+  return response;
+};
+
+async function getResponseOfSheetReadingOutOfRange (data) {
+  const sheets = await getSheet();
+  const request = {
+    spreadsheetId: `1t4qou1upZi387mU9yWl_Uvg_7nPVf-QuQVMhDK1toaI`,
+    range: `Data!A${data.length + 1}:G${data.length + 11}`,
+    valueRenderOption: `UNFORMATTED_VALUE` };
+  const response = await sheets.spreadsheets.values.get(request);
+  return response.data.values;
+};
+
+async function getResponseOfUnauthorizedSheetReading (auth) {
+  const sheets = google.sheets({ version: `v4`, auth });
   const request = {
     spreadsheetId: `1t4qou1upZi387mU9yWl_Uvg_7nPVf-QuQVMhDK1toaI`,
     range: `Data`,
@@ -64,6 +84,9 @@ async function getSheet () {
 
 module.exports = {
   writeToSheet,
+  clearSheet,
   getResponseOfSheetReading,
-  getResponseOfUnauthorizedSheetReading
+  getResponseOfUnauthorizedSheetReading,
+  getResponseOfSheetReadingOutOfRange,
+  getResponseOfSheetReadingWithWrongRange
 };
